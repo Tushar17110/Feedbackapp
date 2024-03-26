@@ -1,13 +1,29 @@
-const express = require('express');             //importing express library
+const express = require('express');
+const mongoose = require('mongoose');
+const cookieSession = require('cookie-session');
+const passport = require('passport');
+const keys = require('./config/keys');
+require('./models/User');
+require('./services/passport');
+
+
+mongoose.connect(keys.mongoURI); 
+
 const app = express();
 
-// creat route handler and associate with route
-app.get('/', (req, res) => {
-    res.send({ Bye: 'Buddy' });
-});
+app.use(
+    cookieSession({
+      maxAge: 30 * 24 * 60 * 60 * 1000,         //it allows the session to last till 30 days. It has to be passed in millisecond, so we write it like this.
+      keys: [keys.cookieKey]                    //to encript the cookie
+    })
+);
+
+app.use(passport.initialize());
+app.use(passport.session());
+
+require('./routes/authRoutes')(app);
 
 const PORT = process.env.PORT || 5000;
-
 app.listen(PORT);
 
 
